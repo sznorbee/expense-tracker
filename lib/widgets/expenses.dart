@@ -29,27 +29,55 @@ class _ExpensesState extends State<Expenses> {
       date: DateTime.now(),
       category: Category.leisure,
     ),
-    Expense(
-      title: 'Laptop',
-      amount: 1000.0,
-      date: DateTime.now(),
-      category: Category.work,
-    ),
-    Expense(
-        title: 'Flutter course',
-        amount: 50.0,
-        date: DateTime.now(),
-        category: Category.work),
   ];
 
   void _openAddExpenseModal() {
     showModalBottomSheet(
+        isScrollControlled: true,
         context: context,
-        builder: (ctx) => const NewExpense());
+        builder: (ctx) => NewExpense(addNewExpense));
+  }
+
+  void addNewExpense(Expense newExpense) {
+    setState(() {
+      _registeredExpenses.add(newExpense);
+    });
+  }
+
+  void deleteExpense(Expense expense) {
+    final expenseIndex = _registeredExpenses.indexOf(expense);
+
+    setState(() {
+      _registeredExpenses.remove(expense);
+    });
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Expense deleted'),
+        duration: const Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() {
+              _registeredExpenses.insert(expenseIndex, expense);
+            });
+          },
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget mainContent = const Center(
+      child: Text('No expenses added yet'),
+    );
+
+    if (_registeredExpenses.isNotEmpty) {
+      mainContent = ExpensesList(
+          expenses: _registeredExpenses, onDeleteExpense: deleteExpense);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -65,10 +93,7 @@ class _ExpensesState extends State<Expenses> {
         ],
       ),
       body: Column(
-        children: [
-          const Text('Chart'),
-          Expanded(child: ExpensesList(expenses: _registeredExpenses))
-        ],
+        children: [const Text('Chart'), Expanded(child: mainContent)],
       ),
     );
   }
