@@ -84,7 +84,6 @@ class _ExpensesState extends State<Expenses> {
           'Expense Tracker',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.lightGreenAccent,
         actions: [
           IconButton(
             onPressed: _openAddExpenseModal,
