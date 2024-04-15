@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:expense_tracker/models/expense.dart';
+import 'package:flutter/cupertino.dart';
 
 class NewExpense extends StatefulWidget {
   const NewExpense(this.addNewExpense, {super.key});
@@ -31,20 +33,16 @@ class _NewExpenseState extends State<NewExpense> {
     });
   }
 
-  void _submitExpData() {
-    final enteredAmount = double.tryParse(_amountController.text);
-    final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
-    if (_titleController.text.trim().isEmpty ||
-        amountIsInvalid ||
-        _selectedDate == null) {
-      showDialog(
+  void _showDialog(BuildContext context) {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
           context: context,
-          builder: (ctx) => AlertDialog(
+          builder: (ctx) => CupertinoAlertDialog(
                 title: const Text('Invalid Input'),
                 content:
                     const Text('Please enter a valid title, amount and date'),
                 actions: [
-                  TextButton(
+                  CupertinoDialogAction(
                     onPressed: () {
                       Navigator.pop(ctx);
                     },
@@ -52,6 +50,32 @@ class _NewExpenseState extends State<NewExpense> {
                   )
                 ],
               ));
+      return;
+    }
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: const Text('Invalid Input'),
+              content:
+                  const Text('Please enter a valid title, amount and date'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Okay'),
+                )
+              ],
+            ));
+  }
+
+  void _submitExpData() {
+    final enteredAmount = double.tryParse(_amountController.text);
+    final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
+    if (_titleController.text.trim().isEmpty ||
+        amountIsInvalid ||
+        _selectedDate == null) {
+      _showDialog(context);
       return;
     }
     final newExpense = Expense(
